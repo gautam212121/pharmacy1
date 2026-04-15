@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+
+body {
+  background: rgb(240, 248, 255);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 
+.bg{
+  background-color: #d6d0c8;
+} */
+/* background-color: var(--color-bg, #d6d0c8); */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add in global CSS */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  /* 'scrollbar-width' is only supported in Firefox and Chrome 121+; safe to ignore in unsupported browsers */
+  scrollbar-width: none;
+  /* Firefox */
+}

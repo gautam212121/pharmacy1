@@ -1,0 +1,88 @@
+{
+
+    "name": "pharmacy",
+
+    "version": "0.1.0",
+
+    "private": true,
+
+    "scripts": {
+
+        "dev": "next dev --turbopack -H 0.0.0.0",
+
+        "build": "next build",
+
+        "start": "next start",
+
+        "lint": "next lint"
+
+    },
+
+    "dependencies": {
+
+        "@clerk/nextjs": "^6.31.1",
+
+        "@emotion/react": "^11.14.0",
+
+        "@emotion/styled": "^11.14.1",
+
+        "@mui/icons-material": "^7.3.4",
+
+        "@mui/material": "^7.3.4",
+
+        "axios": "^1.12.2",
+
+        "bcryptjs": "^3.0.2",
+
+        "cors": "^2.8.5",
+
+        "express": "^5.1.0",
+
+        "jsonwebtoken": "^9.0.2",
+
+        "mongoose": "^8.18.1",
+
+        "next": "15.4.6",
+
+        "react": "19.1.0",
+
+        "react-dom": "19.1.0",
+
+        "react-icons": "^5.5.0",
+
+        "react-is": "^18.3.1",
+
+        "react-router-dom": "^7.8.2",
+
+        "socket.io-client": "^4.8.1",
+
+        "swiper": "^12.0.2",
+
+        "tailwind-scrollbar-hide": "^4.0.0",
+
+        "uuid": "^13.0.0"
+
+    },
+
+    "devDependencies": {
+
+        "@tailwindcss/postcss": "^4",
+
+        "@types/node": "^20",
+
+        "@types/react": "^19",
+
+        "@types/react-dom": "^19",
+
+        "autoprefixer": "^10.4.21",
+
+        "postcss": "^8.5.6",
+
+        "tailwindcss": "^4.1.13",
+
+        "typescript": "^5"
+
+    }
+
+}
+
