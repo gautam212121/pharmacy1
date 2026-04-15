@@ -7,6 +7,9 @@ const productSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     image: { type: String, required: true }, // image URL or path
     category: { type: String, required: true }, // new category field
+    keywords: { type: [String], default: [] },
+    symptoms: { type: [String], default: [] },
+    indications: { type: [String], default: [] },
     discount: { type: Number, default: 0, min: 0, max: 100 }, // discount percentage
     rating: { type: Number, default: 0, min: 0, max: 5 }, // product rating
     reviews: [

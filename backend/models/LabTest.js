@@ -5,6 +5,9 @@ const labTestSchema = new mongoose.Schema({
   healthConcern: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String }, // store image URL
+  keywords: { type: [String], default: [] },
+  symptoms: { type: [String], default: [] },
+  indications: { type: [String], default: [] },
   discount: { type: Number, default: 0, min: 0, max: 100 }, // discount percentage
   rating: { type: Number, default: 0, min: 0, max: 5 }, // test rating
   reviews: [

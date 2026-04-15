@@ -24,6 +24,8 @@ router.post("/", async (req, res) => {
   try {
     const product = new Product(req.body);
     await product.save();
+    const io = req.app.get("io");
+    io?.emit("product-updated");
     res.json(product);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -36,6 +38,8 @@ router.put("/:id", async (req, res) => {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
+    const io = req.app.get("io");
+    io?.emit("product-updated");
     res.json(product);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -68,6 +72,8 @@ router.post("/:id/review", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
+    const io = req.app.get("io");
+    io?.emit("product-updated");
     res.json({ message: "Product deleted" });
   } catch (err) {
     res.status(400).json({ error: err.message });
