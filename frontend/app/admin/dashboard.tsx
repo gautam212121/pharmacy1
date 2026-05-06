@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { HiMenu, HiX, HiHome, HiShoppingCart, HiBell, HiUser, HiLogout, HiCog, HiChartBar , HiPlus, HiPencil, HiTrash, HiCheck, HiX as HiXIcon } from "react-icons/hi";
+import { API_BASE_URL, SOCKET_URL, normalizeBackendUrl } from "../lib/backend";
+import { firebaseAuth } from "../lib/firebase";
+import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
 
 // Types
 type Product = { _id: string; title: string; description: string; amount: number; image: string; category: string; stock?: number; discount?: number; createdAt?: string };
@@ -147,6 +151,8 @@ export default function AdminDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [credentials, setCredentials] = useState({ id: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Data states
   const [products, setProducts] = useState<Product[]>([]);
@@ -158,25 +164,40 @@ export default function AdminDashboard() {
   const [newProduct, setNewProduct] = useState({ title: "", description: "", amount: "", image: "", category: "" });
   const [productSearch, setProductSearch] = useState("");
 
-  const API_URL = "http://localhost:5000/api/products";
-  const LABTEST_URL = "http://localhost:5000/api/lab-tests";
-  const ORDER_URL = "http://localhost:5000/api/orders";
-  const UPLOAD_URL = "http://localhost:5000/api/upload";
+  const API_URL = `${API_BASE_URL}/products`;
+  const LABTEST_URL = `${API_BASE_URL}/lab-tests`;
+  const ORDER_URL = `${API_BASE_URL}/orders`;
+  const UPLOAD_URL = `${API_BASE_URL}/upload`;
 
   // Normalize image paths
   const normalizeImage = (img?: string | null) => {
-    if (!img) return null;
-    if (img.startsWith("http://") || img.startsWith("https://")) return img;
-    return `http://localhost:5000${img}`;
+    return normalizeBackendUrl(img);
   };
 
   // Login handler
-  const handleLogin = () => {
-    if (credentials.id === "ajeet21" && credentials.password === "12345") {
-      setIsLoggedIn(true);
+  const handleLogin = async () => {
+    setLoginError("");
+    setIsLoggingIn(true);
+
+    try {
+      const email = toAuthEmail(credentials.id);
+      const credential = await signInWithEmailAndPassword(firebaseAuth, email, credentials.password);
+      const token = await credential.user.getIdTokenResult();
+
+      if (!isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
+        await signOut(firebaseAuth);
+        setLoginError("Not authorized as admin");
+        return;
+      }
+
+      localStorage.setItem("username", credentials.id);
+      localStorage.setItem("role", "admin");
       localStorage.setItem("adminLoggedIn", "true");
-    } else {
-      alert("Invalid credentials");
+      setIsLoggedIn(true);
+    } catch (err: any) {
+      setLoginError(err?.message || "Invalid credentials");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -220,7 +241,7 @@ export default function AdminDashboard() {
   // Socket connection
   useEffect(() => {
     if (!isLoggedIn) return;
-    const s = io("http://localhost:5000");
+    const s = io(SOCKET_URL);
     setSocket(s);
     s.on("product-updated", fetchProducts);
     s.on("labtest-updated", fetchLabTests);
@@ -251,12 +272,14 @@ export default function AdminDashboard() {
             />
             <button
               onClick={handleLogin}
+              disabled={isLoggingIn}
               className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white py-3 rounded-lg font-semibold transition-all duration-200"
             >
-              Login
+              {isLoggingIn ? "Logging in..." : "Login"}
             </button>
+            {loginError && <p className="text-center text-sm text-red-600">{loginError}</p>}
             <p className="text-center text-sm text-gray-600 mt-4">
-              Demo: ID: <strong>ajeet21</strong> | Password: <strong>12345</strong>
+              Use your Firebase admin account credentials.
             </p>
           </div>
         </div>
@@ -279,9 +302,12 @@ export default function AdminDashboard() {
         <Navbar
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
-          onLogout={() => {
+          onLogout={async () => {
+            await signOut(firebaseAuth);
             setIsLoggedIn(false);
             localStorage.removeItem("adminLoggedIn");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
           }}
           adminName="Ajeet Gautam"
         />

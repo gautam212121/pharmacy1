@@ -50,6 +50,7 @@ function startServer(port = DEFAULT_PORT, attempts = 0) {
 
     socket.on("product-updated", () => io.emit("product-updated"));
     socket.on("labtest-updated", () => io.emit("labtest-updated"));
+    socket.on("new-order", (order) => io.emit("new-order", order));
     socket.on("order-updated", () => io.emit("order-updated"));
 
     socket.on("disconnect", () => {

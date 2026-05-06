@@ -8,6 +8,11 @@ const nextConfig = {
         port: "5000",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "healthcare-czr7.onrender.com",
+        pathname: "/uploads/**",
+      },
     ],
   },
 };

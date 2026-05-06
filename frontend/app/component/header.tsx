@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import axios from "axios";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { HiMenu, HiX, HiShoppingCart, HiUser, HiLogout } from "react-icons/hi";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/cartContext";
 import { useCategory } from "../context/CategoryContext";
 import Categorypanel from "../component/Categorypanel";
 import QuickHealthHelp from "../component/QuickHealthHelp";
+import { firebaseAuth } from "../lib/firebase";
+import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
 
 function SignInHoverLogin() {
   const { login, signup } = useUser();
@@ -49,22 +51,22 @@ function SignInHoverLogin() {
       }
     } else {
       try {
-        const res = await axios.post("http://localhost:5000/api/auth/login", { username, password });
-        if (res.data?.role === "admin") {
-          localStorage.setItem("username", res.data.username);
-          localStorage.setItem("role", res.data.role);
-          window.location.href = "/admin";
-          return;
-        }
-        setError("Not authorized as admin");
-      } catch (err: any) {
-        if (username === "ajeet143" && password === "123456") {
+        const email = toAuthEmail(username);
+        const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        const token = await credential.user.getIdTokenResult();
+
+        if (isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
           localStorage.setItem("username", username);
           localStorage.setItem("role", "admin");
+          localStorage.setItem("adminLoggedIn", "true");
           window.location.href = "/admin";
           return;
         }
-        setError(err.response?.data?.message || "Admin login failed");
+
+        await signOut(firebaseAuth);
+        setError("Not authorized as admin");
+      } catch (err: any) {
+        setError(err?.message || "Admin login failed");
       }
     }
 

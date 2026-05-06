@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../lib/backend";
 
 type LabTestOrder = {
   customerName: string;
@@ -50,6 +51,7 @@ export default function LabTestsPage() {
       address: formData.address,
       items: [{ title: formData.testType, qty: 1, price: 100 }], // Assuming a default price
       totalAmount: 100,
+      orderType: "lab-test",
       status: "Pending",
       age: formData.age,
       gender: formData.gender,
@@ -60,7 +62,7 @@ export default function LabTestsPage() {
   // backend path required when host the website on server  
 
     try {
-      await axios.post("http://localhost:5000/api/orders", order);
+      await axios.post(`${API_BASE_URL}/orders`, order);
       alert("✅ Lab test order placed!");
       setFormData({
         customerName: "",
@@ -134,6 +136,7 @@ export default function LabTestsPage() {
               <select
                 value={formData.gender}
                 onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                aria-label="Select gender"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
               >

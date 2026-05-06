@@ -11,6 +11,7 @@ import Link from "next/link";
 import CheckoutModal from "../component/CheckoutModal";
 import RatingStars from "../component/RatingStars";
 import { useCategory } from "../context/CategoryContext";
+import { API_BASE_URL, SOCKET_URL, normalizeBackendUrl } from "../lib/backend";
 
 
 
@@ -46,11 +47,7 @@ export default function Home() {
   // backend path required when host the website on server  
 
 
-  const normalizeImage = (img?: string | null) => {
-    if (!img) return null;
-    if (img.startsWith("http://") || img.startsWith("https://")) return img;
-    return `http://localhost:5000${img}`;
-  };
+  const normalizeImage = normalizeBackendUrl;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
@@ -74,10 +71,9 @@ export default function Home() {
 
   // backend path required when host the website on server  
 
-  const PRODUCT_URL = "http://localhost:5000/api/products";
-  const LAB_URL = "http://localhost:5000/api/health-products";
-  const SEARCH_URL = "http://localhost:5000/api/search";
-  const SOCKET_URL = "http://localhost:5000";
+  const PRODUCT_URL = `${API_BASE_URL}/products`;
+  const LAB_URL = `${API_BASE_URL}/health-products`;
+  const SEARCH_URL = `${API_BASE_URL}/search`;
 
   // Fetch products
   const fetchProducts = async () => {

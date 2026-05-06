@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../lib/backend";
 
 interface ReviewFormProps {
   productId: string;
@@ -34,8 +35,8 @@ export default function ReviewForm({ productId, productType, onReviewAdded }: Re
     try {
       const endpoint =
         productType === "labtest"
-          ? `http://localhost:5000/api/lab-tests/${productId}/review`
-          : `http://localhost:5000/api/products/${productId}/review`;
+          ? `${API_BASE_URL}/lab-tests/${productId}/review`
+          : `${API_BASE_URL}/products/${productId}/review`;
 
       await axios.post(endpoint, {
         userId: "guest-user",

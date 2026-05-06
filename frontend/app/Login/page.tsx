@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "../context/UserContext";
 
 export default function AuthPage() {
+  const { login, signup } = useUser();
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,34 +15,24 @@ export default function AuthPage() {
 
   const handleSubmit = async () => {
     try {
-      const url = isLogin
-        ? "http://localhost:5001/api/auth/login"
-        : "http://localhost:5001/api/auth/register";
-
-      const res = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        if (isLogin) {
-          // login success
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("role", data.role || "user");
-          router.push("/"); // redirect to home page
-        } else {
-          // signup success
+      if (isLogin) {
+        const success = await login(username, password);
+        if (success) {
+          router.push("/");
+          return;
+        }
+        setError("Invalid credentials");
+      } else {
+        const success = await signup(username, password);
+        if (success) {
           setIsLogin(true);
           setError("✅ Account created! Please login.");
+          return;
         }
-      } else {
-        setError(data.message);
+        setError("Signup failed");
       }
     } catch (err) {
-      setError("Server not reachable");
+      setError("Login failed");
     }
   };
 

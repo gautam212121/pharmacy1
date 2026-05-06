@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { firebaseAuth } from "../lib/firebase";
+import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
 
 export default function AdminHoverLogin() {
   const [open, setOpen] = useState(false);
@@ -16,35 +18,23 @@ export default function AdminHoverLogin() {
     setError("");
     setLoading(true);
 
-    const fallbackAdmin = username === "ajeet143" && password === "123456";
-    
-//   // backend path required when host the website on server  
-
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { username, password });
-      if (res.data?.role === "admin") {
-        localStorage.setItem("username", res.data.username);
-        localStorage.setItem("role", res.data.role);
-        window.location.href = "/admin";
-        return;
-      }
-      // If server returns a valid user but not admin, still allow the known admin credentials.
-      if (fallbackAdmin || (username === "ajeet21" && password === "12345")) {
+      const email = toAuthEmail(username);
+      const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+      const token = await credential.user.getIdTokenResult();
+
+      if (isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
         localStorage.setItem("username", username);
         localStorage.setItem("role", "admin");
+        localStorage.setItem("adminLoggedIn", "true");
         window.location.href = "/admin";
         return;
       }
+
+      await signOut(firebaseAuth);
       setError("Not authorized as admin");
     } catch (err: any) {
-      // connection issue or server down - allow fallback hardcoded credentials
-      if (fallbackAdmin || (username === "ajeet21" && password === "12345")) {
-        localStorage.setItem("username", username);
-        localStorage.setItem("role", "admin");
-        window.location.href = "/admin";
-        return;
-      }
-      setError(err.response?.data?.message || "Login failed");
+      setError(err?.message || "Login failed");
     } finally {
       setLoading(false);
     }

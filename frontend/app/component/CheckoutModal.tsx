@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../lib/backend";
 
 type Product = {
   _id: string;
@@ -79,11 +80,12 @@ export default function CheckoutModal({ item, onClose, onSuccess, normalizeImage
         ],
         totalAmount: totalAmount,
         paymentMethod: paymentMethod,
+        orderType: "product",
         status: "Pending",
       };
 //    // backend path required when host the website on server  
 
-      const response = await axios.post("http://localhost:5000/api/orders", order);
+      const response = await axios.post(`${API_BASE_URL}/orders`, order);
       const createdOrder = response.data?.order ?? response.data;
 
       if (response.status === 201 || response.status === 200) {

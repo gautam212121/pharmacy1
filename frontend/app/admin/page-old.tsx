@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
+import { API_BASE_URL, SOCKET_URL, normalizeBackendUrl } from "../lib/backend";
 
 // --- Types ---
 type Product = { _id: string; title: string; description: string; amount: number; image: string; category: string; stock?: number; createdAt?: string };
@@ -38,9 +39,7 @@ const categories = [
 export default function AdminPanel() {
   // Helper to normalize image path returned by backend
   const normalizeImage = (img?: string | null) => {
-    if (!img) return null;
-    if (img.startsWith("http://") || img.startsWith("https://")) return img;
-    return `http://localhost:5000${img}`;
+    return normalizeBackendUrl(img);
   };
 
   // Helper to choose correct image src for previews (handle blob URLs and remote URLs)
@@ -80,10 +79,10 @@ export default function AdminPanel() {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   // API URLs
-  const API_URL = "http://localhost:5000/api/products";
-  const LABTEST_URL = "http://localhost:5000/api/lab-tests";
-  const ORDER_URL = "http://localhost:5000/api/orders";
-  const UPLOAD_URL = "http://localhost:5000/api/upload";
+  const API_URL = `${API_BASE_URL}/products`;
+  const LABTEST_URL = `${API_BASE_URL}/lab-tests`;
+  const ORDER_URL = `${API_BASE_URL}/orders`;
+  const UPLOAD_URL = `${API_BASE_URL}/upload`;
 
   // --- Login ---
   const handleLogin = () => {
@@ -114,7 +113,7 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    const s = io("http://localhost:5000");
+    const s = io(SOCKET_URL);
     setSocket(s);
 
     s.on("product-updated", fetchProducts);

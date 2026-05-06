@@ -15,16 +15,52 @@ router.get("/", async (req, res) => {
 // Place order
 router.post("/", async (req, res) => {
   try {
-    const { customerName, customerPhone, address, items, totalAmount, status } = req.body;
+    const {
+      customerName,
+      customerPhone,
+      address,
+      items,
+      totalAmount,
+      paymentMethod,
+      paymentStatus,
+      status,
+      orderType,
+      age,
+      gender,
+      testType,
+      doctorType,
+    } = req.body;
+
     if (!customerName || !customerPhone || !address || !items?.length) {
       return res.status(400).json({ message: "Invalid order data" });
     }
 
-    const order = new Order({ customerName, customerPhone, address, items, totalAmount, status });
+    const resolvedOrderType =
+      orderType ||
+      (doctorType ? "doctor-consultation" : testType ? "lab-test" : "product");
+
+    const order = new Order({
+      customerName,
+      customerPhone,
+      address,
+      items,
+      totalAmount,
+      paymentMethod,
+      paymentStatus,
+      status,
+      orderType: resolvedOrderType,
+      age,
+      gender,
+      testType,
+      doctorType,
+    });
     await order.save();
 
     const io = req.app.get("io");
-    if (io) io.emit("new-order", order); // Emit new order to admin panel
+    if (io) {
+      io.emit("new-order", order);
+      io.emit("order-updated", order);
+    }
 
     res.status(201).json({ message: "Order placed successfully", order });
   } catch (err) {

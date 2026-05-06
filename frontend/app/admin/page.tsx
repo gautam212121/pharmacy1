@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { API_BASE_URL, SOCKET_URL, normalizeBackendUrl } from "../lib/backend";
+import { firebaseAuth } from "../lib/firebase";
+import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
 import { HiMenu, HiX, HiHome, HiShoppingCart, HiBell, HiUser, HiLogout, HiCog, HiChartBar, HiPlus, HiPencil, HiTrash, HiCheck, HiX as HiXIcon } from "react-icons/hi";
 
 // Types
@@ -17,7 +21,9 @@ type Order = {
   items: { title: string; qty: number; price: number }[];
   totalAmount: number;
   status: "Pending" | "Accepted" | "Delivered" | "Rejected";
+  orderType?: "product" | "lab-test" | "doctor-consultation";
   testType?: string;
+  doctorType?: string;
   createdAt?: string;
 };
 
@@ -92,9 +98,16 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab }: any) => {
 };
 
 const normalizeImage = (img?: string | null) => {
-  if (!img) return null;
-  if (img.startsWith("http://") || img.startsWith("https://")) return img;
-  return `http://localhost:5000${img}`;
+  return normalizeBackendUrl(img);
+};
+
+const getOrderType = (order: Order) => {
+  if (order.orderType) return order.orderType;
+
+  const itemTitle = order.items?.[0]?.title?.toLowerCase() || "";
+  if (order.doctorType || itemTitle.includes("appointment")) return "doctor-consultation";
+  if (order.testType || itemTitle.includes("test")) return "lab-test";
+  return "product";
 };
 
 // Add Product Modal Component
@@ -106,7 +119,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gradient-to-r from-teal-600 to-teal-700 p-6 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-white">{isEditing ? "Edit Product" : "Add New Product"}</h2>
-          <button onClick={onClose} className="text-white hover:bg-teal-600 p-2 rounded-lg transition-colors">
+          <button onClick={onClose} title="Close product modal" aria-label="Close product modal" className="text-white hover:bg-teal-600 p-2 rounded-lg transition-colors">
             <HiX size={24} />
           </button>
         </div>
@@ -118,6 +131,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
             <input
               type="text"
               value={form.title}
+              title="Product title"
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               placeholder="Enter product title"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -129,6 +143,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
             <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
             <textarea
               value={form.description}
+              title="Product description"
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Enter product description"
               rows={3}
@@ -142,6 +157,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <label className="block text-sm font-semibold text-gray-700 mb-2">Main Category *</label>
               <select
                 value={selectedCategory}
+                title="Select main category"
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setSelectedSubcategory("");
@@ -159,6 +175,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <label className="block text-sm font-semibold text-gray-700 mb-2">Subcategory *</label>
               <select
                 value={selectedSubcategory}
+                title="Select subcategory"
                 onChange={(e) => setSelectedSubcategory(e.target.value)}
                 disabled={!selectedCategory}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-gray-100"
@@ -178,6 +195,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <input
                 type="number"
                 value={form.amount}
+                title="Product price"
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 placeholder="Enter price"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -188,6 +206,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <input
                 type="number"
                 value={form.stock}
+                title="Stock quantity"
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
                 placeholder="0"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -198,6 +217,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <input
                 type="number"
                 value={form.discount}
+                title="Discount percentage"
                 onChange={(e) => setForm({ ...form, discount: e.target.value })}
                 placeholder="0"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -212,6 +232,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit, form, setForm, categories,
               <input
                 type="file"
                 accept="image/*"
+                title="Upload product image"
                 onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
@@ -293,6 +314,8 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, onLogout, adminName }: any) =
         {/* Logout */}
         <button
           onClick={onLogout}
+          title="Logout"
+          aria-label="Logout"
           className="text-gray-600 hover:text-red-600 transition-colors"
         >
           <HiLogout size={24} />
@@ -311,12 +334,16 @@ export default function AdminDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [credentials, setCredentials] = useState({ id: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Data states
   const [products, setProducts] = useState<Product[]>([]);
   const [labTests, setLabTests] = useState<LabTest[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [productOrders, setProductOrders] = useState<Order[]>([]);
   const [labTestOrders, setLabTestOrders] = useState<Order[]>([]);
+  const [doctorOrders, setDoctorOrders] = useState<Order[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [productSearch, setProductSearch] = useState("");
   const [showAddProductModal, setShowAddProductModal] = useState(false);
@@ -373,17 +400,33 @@ export default function AdminDashboard() {
     setEditingProductId(null);
   };
 
-  const API_URL = "http://localhost:5000/api/products";
-  const LABTEST_URL = "http://localhost:5000/api/lab-tests";
-  const ORDER_URL = "http://localhost:5000/api/orders";
+  const API_URL = `${API_BASE_URL}/products`;
+  const LABTEST_URL = `${API_BASE_URL}/lab-tests`;
+  const ORDER_URL = `${API_BASE_URL}/orders`;
 
   // Login handler
-  const handleLogin = () => {
-    if (credentials.id === "ajeet21" && credentials.password === "12345") {
-      setIsLoggedIn(true);
+  const handleLogin = async () => {
+    setLoginError("");
+    setIsLoggingIn(true);
+    try {
+      const email = toAuthEmail(credentials.id);
+      const credential = await signInWithEmailAndPassword(firebaseAuth, email, credentials.password);
+      const token = await credential.user.getIdTokenResult();
+
+      if (!isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
+        await signOut(firebaseAuth);
+        setLoginError("Not authorized as admin");
+        return;
+      }
+
+      localStorage.setItem("username", credentials.id);
+      localStorage.setItem("role", "admin");
       localStorage.setItem("adminLoggedIn", "true");
-    } else {
-      alert("Invalid credentials");
+      setIsLoggedIn(true);
+    } catch (err: any) {
+      setLoginError(err?.message || "Invalid credentials");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -423,7 +466,7 @@ export default function AdminDashboard() {
     const formData = new FormData();
     formData.append("image", file);
     try {
-      const res = await axios.post("http://localhost:5000/api/upload", formData, {
+      const res = await axios.post(`${API_BASE_URL}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       const normalizedUrl = normalizeImage(res.data.imageUrl) || res.data.imageUrl;
@@ -551,8 +594,9 @@ export default function AdminDashboard() {
   // Socket connection
   useEffect(() => {
     if (!isLoggedIn) return;
-    const s = io("http://localhost:5000");
+    const s = io(SOCKET_URL);
     setSocket(s);
+    s.on("new-order", fetchOrders);
     s.on("product-updated", fetchProducts);
     s.on("labtest-updated", fetchLabTests);
     s.on("order-updated", fetchOrders);
@@ -560,9 +604,9 @@ export default function AdminDashboard() {
   }, [isLoggedIn]);
 
   useEffect(() => {
-    setLabTestOrders(
-      orders.filter((order) => order.testType || order.items?.[0]?.title?.toLowerCase().includes("test"))
-    );
+    setProductOrders(orders.filter((order) => getOrderType(order) === "product"));
+    setLabTestOrders(orders.filter((order) => getOrderType(order) === "lab-test"));
+    setDoctorOrders(orders.filter((order) => getOrderType(order) === "doctor-consultation"));
   }, [orders]);
 
   // Login Screen
@@ -588,12 +632,14 @@ export default function AdminDashboard() {
             />
             <button
               onClick={handleLogin}
+              disabled={isLoggingIn}
               className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white py-3 rounded-lg font-semibold transition-all duration-200"
             >
-              Login to Dashboard
+              {isLoggingIn ? "Logging in..." : "Login to Dashboard"}
             </button>
+            {loginError && <p className="text-center text-sm text-red-600">{loginError}</p>}
             <p className="text-center text-sm text-gray-600 mt-4">
-              Demo Credentials:<br/><strong>ID:</strong> ajeet21 | <strong>Password:</strong> 12345
+              Use your Firebase admin account credentials.
             </p>
           </div>
         </div>
@@ -617,9 +663,12 @@ export default function AdminDashboard() {
         <Navbar
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
-          onLogout={() => {
+          onLogout={async () => {
+            await signOut(firebaseAuth);
             setIsLoggedIn(false);
             localStorage.removeItem("adminLoggedIn");
+            localStorage.removeItem("username");
+            localStorage.removeItem("role");
           }}
           adminName="Ajeet Gautam"
         />
@@ -699,7 +748,7 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
                 <div className="text-sm text-gray-600 bg-white px-4 py-2 rounded-lg">
-                  Pending: <span className="font-bold text-orange-600 text-lg">{pendingOrders}</span>
+                  Pending: <span className="font-bold text-orange-600 text-lg">{productOrders.filter(o => o.status === "Pending").length}</span>
                 </div>
               </div>
 
@@ -718,7 +767,13 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order, idx) => (
+                    {productOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                          No product orders yet
+                        </td>
+                      </tr>
+                    ) : productOrders.map((order, idx) => (
                       <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-sm font-medium">{idx + 1}</td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.customerName}</td>
@@ -964,24 +1019,68 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-500 rounded-lg p-6">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Total Consultations</h3>
-                  <p className="text-3xl font-bold text-purple-600">0</p>
+                  <p className="text-3xl font-bold text-purple-600">{doctorOrders.length}</p>
                 </div>
                 <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-l-4 border-orange-500 rounded-lg p-6">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Pending Appointments</h3>
-                  <p className="text-3xl font-bold text-orange-600">0</p>
+                  <p className="text-3xl font-bold text-orange-600">{doctorOrders.filter(o => o.status === "Pending").length}</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500 rounded-lg p-6">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Completed</h3>
-                  <p className="text-3xl font-bold text-green-600">0</p>
+                  <p className="text-3xl font-bold text-green-600">{doctorOrders.filter(o => o.status === "Accepted" || o.status === "Delivered").length}</p>
                 </div>
                 <div className="bg-gradient-to-br from-pink-50 to-pink-100 border-l-4 border-pink-500 rounded-lg p-6">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Revenue</h3>
-                  <p className="text-3xl font-bold text-pink-600">₹0</p>
+                  <p className="text-3xl font-bold text-pink-600">₹{doctorOrders.reduce((sum, order) => sum + order.totalAmount, 0)}</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <p className="text-gray-600 text-center py-12">👨‍⚕️ Doctor consultation module coming soon...</p>
+              <div className="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900">Doctor Consultation Orders</h2>
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-200 bg-gray-50">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">#</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Customer Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Phone</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Doctor Type</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {doctorOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                          No doctor consultation orders yet
+                        </td>
+                      </tr>
+                    ) : (
+                      doctorOrders.map((order, idx) => (
+                        <tr key={order._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium">{idx + 1}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.customerName}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{order.customerPhone}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{order.doctorType || order.items?.[0]?.title || "Doctor Consultation"}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-gray-900">₹{order.totalAmount}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              order.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
+                              order.status === "Accepted" ? "bg-green-100 text-green-800" :
+                              "bg-red-100 text-red-800"
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

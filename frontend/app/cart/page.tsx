@@ -3,6 +3,7 @@ import { useCart } from "../context/cartContext";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { API_BASE_URL, SOCKET_URL } from "../lib/backend";
 
 type OrderItem = { title: string; qty: number; price: number };
 
@@ -13,7 +14,7 @@ export default function CartPage() {
 // 2---- // backend path required when host the website on server  
 
 
-  useEffect(() => { setSocket(io("http://localhost:5000")); return () => socket?.disconnect(); }, []);
+  useEffect(() => { setSocket(io(SOCKET_URL)); return () => socket?.disconnect(); }, []);
 
   const handlePlaceOrder = async () => {
     if (!cart.length) return alert("Cart is empty!");
@@ -24,6 +25,7 @@ export default function CartPage() {
       address: "Sample Address",
       items: cart.map(item => ({ title: item.product.title, qty: item.qty, price: item.product.amount })),
       totalAmount: cart.reduce((sum, item) => sum + (item.product.amount * item.qty), 0),
+      orderType: "product",
       status: "Pending",
     };
 
@@ -31,7 +33,7 @@ export default function CartPage() {
 //  // backend path required when host the website on server  
 
     try {
-      const res = await axios.post("http://localhost:5000/api/orders", order);
+      const res = await axios.post(`${API_BASE_URL}/orders`, order);
       if (res.status === 201) {
         alert("✅ Order placed!");
         clearCart();
