@@ -208,3 +208,286 @@ Adding these handlers prevents the Node.js process from crashing silently, logs 
 3. **Prescription Parsing System**: Integrate a document parsing API to scan uploaded prescriptions and suggest matching medicines automatically.
 4. **Admin Reports**: Add visual charts to the Admin panel showing sales trends, popular medicines, and active consultations.
 5. **Database Indexing**: Add compound index matching on frequently searched fields in the Product collection to optimize search times.
+
+---
+
+## Category 5: Core JavaScript Questions
+
+### Q26: What is the difference between `var`, `let`, and `const` in JavaScript?
+**Answer:**
+* **`var`**: Function-scoped, can be re-declared and updated, and is hoisted to the top of its scope initialized as `undefined`.
+* **`let`**: Block-scoped (bounded by `{}`), can be updated but **cannot** be re-declared in the same scope, and is not initialized during hoisting (Temporal Dead Zone).
+* **`const`**: Block-scoped, **cannot** be updated or re-declared. It must be initialized at the time of declaration. Note that for objects/arrays declared with `const`, their properties/elements can still be modified.
+
+---
+
+### Q27: Explain Closures in JavaScript with a simple example.
+**Answer:** A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment). In simple terms, a closure gives an inner function access to the outer function's scope even after the outer function has returned.
+**Example:**
+```javascript
+function outerFunction(outerVariable) {
+  return function innerFunction(innerVariable) {
+    console.log("Outer: " + outerVariable + ", Inner: " + innerVariable);
+  };
+}
+const newFunction = outerFunction("outside");
+newFunction("inside"); // Outputs: Outer: outside, Inner: inside
+```
+
+---
+
+### Q28: What is the difference between `==` and `===` operators?
+**Answer:**
+* **`==` (Loose Equality)**: Compares two values for equality after performing **type coercion** (converting both values to a common type first). For example, `5 == "5"` returns `true`.
+* **`===` (Strict Equality)**: Compares both the **value** and the **data type** without coercion. If the types are different, it immediately returns `false`. For example, `5 === "5"` returns `false`.
+
+---
+
+### Q29: What are Promises, and what is the difference between Promises and `async/await`?
+**Answer:**
+* **Promise**: An object representing the eventual completion (resolve) or failure (reject) of an asynchronous operation. It uses `.then()` and `.catch()` blocks to handle results.
+* **`async/await`**: A syntactic sugar built on top of Promises to write asynchronous code that looks and behaves like synchronous code. `async` functions return a Promise, and `await` pauses execution until the Promise resolves or rejects (handled using `try-catch` blocks).
+
+---
+
+### Q30: What is the difference between `map()`, `filter()`, and `forEach()` array methods?
+**Answer:**
+* **`forEach()`**: Iterates over array elements and executes a callback function for each. It **does not return** a new array (returns `undefined`).
+* **`map()`**: Iterates over elements, transforms each element using a callback function, and **returns a new array** of the same length.
+* **`filter()`**: Iterates over elements, checks a boolean condition in the callback, and **returns a new array** containing only elements that passed the condition (may be shorter than original).
+
+---
+
+### Q31: What is hoisting in JavaScript?
+**Answer:** Hoisting is JavaScript's default behavior of moving variable and function declarations to the top of their containing scope before code execution. 
+* Functions declared with the `function` keyword are fully hoisted, meaning they can be called before they are written.
+* Variables declared with `var` are hoisted but initialized to `undefined`.
+* Variables declared with `let` and `const` are hoisted but remain uninitialized in the "Temporal Dead Zone" (TDZ) and will throw a ReferenceError if accessed before declaration.
+
+---
+
+### Q32: Explain Destructuring and the Spread/Rest operator (`...`).
+**Answer:**
+* **Destructuring**: A shorthand syntax to extract values from arrays or properties from objects into distinct variables.
+  * *Example*: `const { username, role } = user;`
+* **Spread Operator (`...`)**: Expands an array or object into individual elements. Used to clone or merge arrays/objects.
+  * *Example*: `const newCart = [...prevCart, newItem];`
+* **Rest Operator (`...`)**: Condenses multiple elements/arguments into a single array. Used in function parameter lists.
+  * *Example*: `const [first, ...remaining] = items;`
+
+---
+
+### Q33: Explain the Event Loop in JavaScript.
+**Answer:** JavaScript is single-threaded, meaning it executes one statement at a time. The **Event Loop** is the mechanism that allows JS to perform non-blocking asynchronous operations:
+1. **Call Stack**: Executes synchronous code.
+2. **Web APIs**: Handles async tasks (timeouts, fetch APIs, DOM events).
+3. **Callback/Task Queue**: Holds resolved callbacks.
+4. **Event Loop**: Continuously checks if the Call Stack is empty. If it is, it pushes the first callback from the Callback Queue onto the Call Stack to run.
+
+---
+
+### Q34: What is the difference between `null` and `undefined` in JavaScript?
+**Answer:**
+* **`undefined`**: Means a variable has been declared but has not yet been assigned a value. It is JavaScript's default value for uninitialized variables.
+  * *Example*: `let x; console.log(x); // undefined`
+  * *Type*: `typeof undefined` is `"undefined"`.
+* **`null`**: An assignment value that represents the intentional absence of any object value. It must be explicitly assigned to a variable.
+  * *Example*: `let y = null;`
+  * *Type*: `typeof null` is `"object"` (a historical bug in JS).
+
+---
+
+### Q35: What is the `this` keyword in JavaScript, and how does it behave in regular functions vs. arrow functions?
+**Answer:** The `this` keyword refers to the object that is executing the current piece of code. Its value depends on how the function is called:
+1. **Regular Functions**: The value of `this` is dynamically bound depending on the calling context. In a method, it refers to the owner object. In a standalone function, it refers to the global object (or `undefined` in strict mode).
+2. **Arrow Functions**: Arrow functions do not have their own `this` binding. They inherit `this` **lexically** from the enclosing parent scope at the time they are defined. `call()`, `apply()`, or `bind()` cannot change the `this` of an arrow function.
+
+---
+
+### Q36: What is the difference between `call()`, `apply()`, and `bind()` methods?
+**Answer:** All three methods are used to control the value of the `this` keyword inside a function:
+* **`call()`**: Invokes a function immediately, passing the `this` value as the first argument, followed by arguments passed **individually** (separated by commas).
+  * *Example*: `greet.call(personObj, "Hello", "World");`
+* **`apply()`**: Invokes a function immediately, passing the `this` value as the first argument, followed by arguments passed as an **array**.
+  * *Example*: `greet.apply(personObj, ["Hello", "World"]);`
+* **`bind()`**: Does not invoke the function immediately. Instead, it **returns a new function** with the `this` context bound permanently to the specified object. It can be invoked later.
+  * *Example*: `const boundGreet = greet.bind(personObj); boundGreet("Hello", "World");`
+
+---
+
+### Q37: What is "Callback Hell", and how do Promises and `async/await` solve it?
+**Answer:**
+* **Callback Hell**: A situation where multiple nested callbacks are passed as arguments to handle sequential asynchronous tasks. It results in pyramid-like, unreadable, and hard-to-maintain code.
+* **Solution**:
+  * **Promises** replace nesting with **flat chaining** using `.then()` blocks.
+  * **`async/await`** simplifies this further by allowing async code to be written sequentially without chains or callbacks:
+```javascript
+// Callback Hell
+getUser(userId, (user) => {
+  getOrders(user.id, (orders) => {
+    getOrderDetails(orders[0].id, (details) => {
+      console.log(details);
+    });
+  });
+});
+
+// Async/Await solution
+try {
+  const user = await getUser(userId);
+  const orders = await getOrders(user.id);
+  const details = await getOrderDetails(orders[0].id);
+  console.log(details);
+} catch (error) {
+  console.error(error);
+}
+```
+
+---
+
+### Q38: Explain Event Bubbling and Event Capturing in JavaScript.
+**Answer:** They are the two phases of event propagation in the HTML DOM tree when an event occurs on an element nested inside other elements:
+1. **Event Capturing (Trickling)**: The event starts from the window and trickles down through parent elements to the target element. (Rarely used by default).
+2. **Event Bubbling**: The event starts from the target element that triggered it and bubbles up to its parent, grandparents, and finally the window. (This is the default browser behavior).
+* **Prevention**: You can stop the propagation of an event up or down the DOM tree by calling `event.stopPropagation()` inside the event handler.
+
+---
+
+### Q39: What is the difference between `localStorage`, `sessionStorage`, and `cookies`?
+**Answer:**
+| Feature | `localStorage` | `sessionStorage` | `cookies` |
+| :--- | :--- | :--- | :--- |
+| **Capacity** | ~5MB - 10MB | ~5MB | ~4KB |
+| **Expiration** | Never (must be cleared manually or via code) | On tab/browser close | Set manually (has an expiry date) |
+| **Server Access**| Client-side only (not sent with HTTP requests) | Client-side only (not sent with HTTP requests) | Sent automatically with every HTTP request |
+| **Use Case** | Persistent items like Shopping Cart, User preferences | Temporary state like multi-step forms in one session | Authentication tokens (using secure `HttpOnly` cookie) |
+
+---
+
+### Q40: What is the difference between shallow copy and deep copy, and how do you achieve them in JavaScript?
+**Answer:**
+* **Shallow Copy**: Copies the top-level properties of an object or array. Nested objects or arrays are copied as **references** (they still point to the same memory location).
+  * *Methods*: Spread operator `const copy = {...obj}` or `Object.assign({}, obj)`.
+  * *Risk*: If you modify `copy.nestedObj.prop`, it will also modify `originalObj.nestedObj.prop`.
+* **Deep Copy**: Copies all levels of an object or array, creating completely independent copies of nested elements.
+  * *Methods*: 
+    1. Using `JSON.parse(JSON.stringify(obj))` (fails for functions, undefined values, Map/Set, RegExp, Dates).
+    2. Using `structuredClone(obj)` (the modern native web API for deep copying).
+    3. Custom recursive cloning or utilities like Lodash's `_.cloneDeep()`.
+
+---
+
+## Category 6: Core React.js & Next.js Questions
+
+### Q41: What is the Virtual DOM, and how does React use it to optimize rendering?
+**Answer:** The Virtual DOM is a lightweight, in-memory representation of the real DOM. When a component's state or props change:
+1. React creates a new Virtual DOM tree.
+2. It compares the new tree with the previous Virtual DOM tree using a "diffing" algorithm (**Reconciliation**).
+3. React calculates the minimum number of changes required and updates **only** those specific parts in the real DOM (called **batching** or **patching**), which is much faster than re-rendering the entire real DOM.
+
+---
+
+### Q42: What is the difference between State and Props in React?
+**Answer:**
+* **State**: A local, mutable data structure managed *within* the component itself. Changes in state trigger a component re-render.
+* **Props (Properties)**: Immutable read-only data passed from a *parent* component to a child component. A child cannot modify the props it receives.
+
+---
+
+### Q43: Why do we use the `key` prop in React lists, and what happens if we use array indexes as keys?
+**Answer:**
+* **Why**: The `key` prop helps React identify which items have changed, been added, or been removed. It is crucial for Virtual DOM reconciliation to update lists efficiently.
+* **Array Indexes**: Using array indexes as keys is discouraged if the list can be reordered, filtered, or deleted. It can cause rendering bugs, incorrect component states, and drop in performance because React assumes the elements at that index are the same. It is best to use a unique ID (like `_id` from MongoDB).
+
+---
+
+### Q44: What are Hooks? Explain the purpose of `useState` and `useEffect`.
+**Answer:** Hooks are special functions introduced in React 16.8 that allow functional components to use state and other React lifecycle features without writing class components.
+* **`useState`**: Declares a local state variable and a setter function to modify it.
+* **`useEffect`**: Performs side effects in functional components (like API calls, subscribing to sockets, setting event listeners). It runs after rendering.
+
+---
+
+### Q45: What is the difference between `useMemo` and `useCallback`?
+**Answer:** Both are optimization hooks used to prevent unnecessary re-computations or child re-renders:
+* **`useMemo`**: Memoizes the **result value** of an expensive calculation so it is only re-calculated when dependencies change.
+* **`useCallback`**: Memoizes the **function definition instance** itself so it is not re-created on every render, preventing unnecessary re-renders of child components that receive the function as props.
+
+---
+
+### Q46: How does React Context API work, and when should we use it?
+**Answer:** The Context API provides a way to share global state (like user auth, theme, shopping cart) across the entire component tree without manually passing props down through multiple intermediate levels (**prop drilling**). It should be used for simple, low-frequency global state updates. For highly frequent or massive states, libraries like Redux or Zustand are preferred.
+
+---
+
+### Q47: What is the difference between Controlled and Uncontrolled Components in React forms?
+**Answer:**
+* **Controlled Component**: The form input value is controlled by React state. The input has a `value` prop bound to state and an `onChange` handler that updates the state. React is the "single source of truth".
+* **Uncontrolled Component**: The input value is handled by the real DOM itself. We use React **refs** (`useRef`) to pull the value from the DOM element when needed (e.g. on form submit). It is closer to traditional HTML.
+
+---
+
+### Q48: Why should you never modify React state directly (e.g., `state = y` or `state.push(item)`)?
+**Answer:** React states are immutable. React relies on comparing references of state variables to detect changes and determine when to trigger a re-render. If you mutate a state directly, the object reference remains the same, React does not detect the change, and the user interface will not update to show the new values. Always use the state setter function (e.g. `setCart(...)`) with a new object/array copy.
+
+---
+
+### Q49: What is the difference between React Server Components (RSC) and Client Components in Next.js?
+**Answer:**
+* **React Server Components (RSC)**: The default component type in Next.js App Router. They are rendered entirely on the server.
+  * *Pros*: Zero client-side JavaScript bundle footprint, direct database or API fetching from server code, and better security.
+  * *Limitations*: Cannot use React hooks (`useState`, `useEffect`), cannot use browser-only APIs (`window`, `document`, `localStorage`).
+* **Client Components**: Triggered by adding the `"use client"` directive at the very top of the file. They are pre-rendered on the server but hydated and run on the client.
+  * *Pros*: Can use state, hooks, event listeners, and browser APIs.
+  * *Limitations*: Increases client-side JS bundle size.
+
+---
+
+### Q50: What is "Prop Drilling", and what are the different ways to avoid it?
+**Answer:** Prop drilling is the process of passing props through multiple levels of nested child components just to reach a deeply nested component that actually needs the data, while intermediate components do not use it.
+* **How to avoid**:
+  1. **React Context API**: Create a provider at the top level and consume the state directly inside the target component.
+  2. **Component Composition**: Pass components as props (`children`) so intermediate wrappers don't need to know about the props.
+  3. **Global State Management**: Use state managers like Zustand, Redux, or Recoil to store and retrieve data globally.
+
+---
+
+### Q51: What are Custom Hooks in React? Why and when should you write one?
+**Answer:** A Custom Hook is a JavaScript function whose name starts with `"use"` and that can call other hooks (like `useState`, `useEffect`, etc.).
+* **Why**: To extract and share stateful logic between different components without duplicating code.
+* **When**: When you find the same hook-based logic (e.g., fetching data, listening to resize events, handling form validation, tracking socket subscriptions) repeated across multiple components.
+* *Example*: Creating `useFetch(url)` to reuse fetching and loading states.
+
+---
+
+### Q52: What are React Fragments, and why should we use them instead of wrapping everything in a `div`?
+**Answer:** React components must return a single root element. If you have adjacent elements, you have to wrap them. A Fragment (`<React.Fragment>` or `<>...</>`) acts as a wrapper.
+* **Why use it**: 
+  1. It does not add an extra node to the HTML DOM, keeping the DOM tree cleaner and lightweight.
+  2. It avoids breaking CSS layouts (such as Flexbox or CSS Grid) that depend on direct parent-child relationships.
+  3. It uses slightly less memory.
+
+---
+
+### Q53: How do you optimize the performance of a React or Next.js application?
+**Answer:**
+1. **Memoization**: Use `React.memo`, `useMemo`, and `useCallback` to prevent unnecessary component re-renders and expensive calculations.
+2. **Code Splitting**: Use dynamic imports (`next/dynamic` or `React.lazy`) to load components or heavy libraries only when they are needed.
+3. **Image Optimization**: Use the Next.js `Image` component to compress, lazy-load, and serve images in modern formats (like WebP).
+4. **Debouncing/Throttling**: Limit the rate of heavy operations like window resize handlers or real-time search typing updates.
+5. **Server Components (RSC)**: Keep heavy computation and API calls inside Server Components to avoid shipping JS to the client.
+
+---
+
+### Q54: What are Error Boundaries in React, and how do they work?
+**Answer:** Error Boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI instead of crashing the whole application.
+* **How they work**: They are class components that implement the lifecycle methods `static getDerivedStateFromError()` (to render a fallback UI) and `componentDidCatch()` (to log error details). In Next.js, this is simplified using specialized `error.js`/`error.tsx` files placed in route folders.
+
+---
+
+### Q55: What is the difference between a class component and a functional component in React?
+**Answer:**
+* **Functional Components**: Simple JavaScript functions that accept props and return JSX. Before React 16.8, they were stateless. Now, with Hooks, they support state, lifecycle effects, and memoization. They are the modern standard in React development.
+* **Class Components**: ES6 classes extending `React.Component`. They require a `render()` method, use `this.state` and `this.setState()`, and rely on lifecycle methods like `componentDidMount`, `componentDidUpdate`, and `componentWillUnmount`. They are considered legacy but are still supported and required for standard Error Boundaries.
+
+---
+
