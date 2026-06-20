@@ -392,12 +392,27 @@ export default function Header() {
                   <span className="hidden sm:inline">{user.username}</span>
                 </button>
                 {showLogout && (
-                  <button
-                    onClick={handleLogout}
-                    className="absolute right-0 mt-2 bg-red-500 px-3 py-2 rounded text-white text-sm hover:bg-red-600 whitespace-nowrap flex items-center gap-2"
-                  >
-                    <HiLogout className="h-4 w-4" /> Logout
-                  </button>
+                  <div className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-2 w-48 z-50 text-black flex flex-col gap-1">
+                    <div className="px-3 py-1.5 border-b border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      Account Menu
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setShowLogout(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-teal-50 hover:text-teal-900 transition-colors font-semibold"
+                    >
+                      <span>📊</span> User Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setShowLogout(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors font-semibold text-left w-full cursor-pointer"
+                    >
+                      <HiLogout className="h-4 w-4 flex-shrink-0" /> Logout
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
@@ -446,13 +461,7 @@ export default function Header() {
                 All Products
               </Link>
             </li>
-            {user && (
-              <li>
-                <Link href="/dashboard" className="hover:text-secondary font-bold text-teal-200 transition px-3 py-2">
-                  Dashboard
-                </Link>
-              </li>
-            )}
+
             {Object.keys(dropdownItems).map((menu) => (
               <li key={menu} className="relative group">
                 <Link href={`/?category=${encodeURIComponent(menu)}`} className="hover:text-secondary transition px-3 py-2">
@@ -498,13 +507,7 @@ export default function Header() {
                   Pharmacy Services ▼
                 </button>
               </li>
-              {user && (
-                <li className="px-2 py-2 hover:text-secondary transition font-bold text-teal-200">
-                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                    Dashboard
-                  </Link>
-                </li>
-              )}
+
 
               {Object.keys(dropdownItems).map((menu) => (
                 <li key={menu}>
