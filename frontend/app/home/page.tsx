@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { useSearchParams } from "next/navigation";
+// useSearchParams removed to avoid CSR bailout during prerender; using URLSearchParams at runtime instead.
 import { useCart } from "../context/cartContext";
 import Homeslider from "../home/Homeslider";
 import Link from "next/link";
@@ -235,10 +235,7 @@ export default function Home() {
   };
   // type of medicines and services
 
-  const searchParams = useSearchParams();
-  const categoryQuery =
-    searchParams.get("category") ||
-    (selectedCategory && selectedCategory !== "All Products" ? selectedCategory : "");
+  const categoryQuery = (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("category") : null) || (selectedCategory && selectedCategory !== "All Products" ? selectedCategory : "");
 
   const categoryGroups: Record<string, string[]> = {
     "Medicines": [

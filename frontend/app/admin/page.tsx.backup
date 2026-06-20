@@ -225,7 +225,9 @@ export default function AdminDashboard() {
     s.on("product-updated", fetchProducts);
     s.on("labtest-updated", fetchLabTests);
     s.on("order-updated", fetchOrders);
-    return () => s.disconnect();
+    return () => {
+      s.disconnect();
+    };
   }, [isLoggedIn]);
 
   // Login Screen

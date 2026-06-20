@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { firebaseAuth } from "../lib/firebase";
-import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
+import { loginWithBackend, storeAuthUser } from "../lib/auth";
 
 export default function AdminHoverLogin() {
   const [open, setOpen] = useState(false);
@@ -19,20 +17,19 @@ export default function AdminHoverLogin() {
     setLoading(true);
 
     try {
-      const email = toAuthEmail(username);
-      const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      const token = await credential.user.getIdTokenResult();
-
-      if (isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
-        localStorage.setItem("username", username);
-        localStorage.setItem("role", "admin");
-        localStorage.setItem("adminLoggedIn", "true");
-        window.location.href = "/admin";
+      const user = await loginWithBackend(username, password);
+      if (!user) {
+        setError("Invalid credentials");
         return;
       }
 
-      await signOut(firebaseAuth);
-      setError("Not authorized as admin");
+      if (user.role !== "admin") {
+        setError("Not authorized as admin");
+        return;
+      }
+
+      storeAuthUser(user);
+      window.location.href = "/admin";
     } catch (err: any) {
       setError(err?.message || "Login failed");
     } finally {

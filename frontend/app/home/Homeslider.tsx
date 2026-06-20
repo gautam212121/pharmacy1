@@ -1,60 +1,100 @@
-import React from 'react'
-// Import Swiper React components
-import { Swiper, SwiperSlide } from 'swiper/react';
+"use client";
 
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-// import required modules
-import { Navigation } from 'swiper/modules';
+import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
+
 export default function Homeslider() {
-    return (
-        <div>
-            <Swiper navigation={true} modules={[Navigation]} className="mySwiper m-5 h-60%">
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/blood-sample.jpg" alt="skp[g" className='w-full h-60   ' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/medicine.jpg" alt="skp[g" className='w-full h-60' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/Heinens.jpg" alt="skp[g" className='w-full h-60 ' />
-                    </div>
-                </SwiperSlide>
+  return (
+    <div>
+      <Swiper
+        navigation={true}
+        modules={[Navigation]}
+        className="mySwiper m-5"
+      >
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/blood-sample.jpg"
+              alt="Blood Sample"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
 
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/heart.jpeg" alt="skp[g" className='w-full h-60 ' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/blood-sample.jpg" alt="skp[g" className='w-full h-60' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/medicine.jpg" alt="skp[g" className='w-full h-60' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/Heinens.jpg" alt="skp[g" className='w-full h-60 ' />
-                    </div>
-                </SwiperSlide>
-                <SwiperSlide>
-                    <div className='item rounded-[20px] overflow-hidden'>
-                        <img src="/images/heart.jpeg" alt="skp[g" className='w-full h-60 ' />
-                    </div>
-                </SwiperSlide>
-            </Swiper>
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/medicine.jpg"
+              alt="Medicine"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
 
-        </div>
-    )
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/Heinens.jpg"
+              alt="Heinens"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/heart.jpeg"
+              alt="Heart"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/blood-sample.jpg"
+              alt="Blood Sample"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/medicine.jpg"
+              alt="Medicine"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/Heinens.jpg"
+              alt="Heinens"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+
+        <SwiperSlide>
+          <div className="item rounded-[20px] overflow-hidden">
+            <img
+              src="/images/heart.jpeg"
+              alt="Heart"
+              className="w-full h-60 object-cover"
+            />
+          </div>
+        </SwiperSlide>
+      </Swiper>
+    </div>
+  );
 }
-

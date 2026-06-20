@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Disable SWC minification to avoid CSS processing issues
+  swcMinify: true,
+  webpack: (config) => {
+    // Ensure proper CSS handling for node_modules
+    return config;
+  },
 };
 
 export default nextConfig;

@@ -18,7 +18,8 @@ type Order = {
   address: string;
   items: OrderItem[];
   totalAmount: number;
-  status: "Pending" | "Accepted" | "Rejected";
+  status: "Pending" | "Accepted" | "Delivered" | "Rejected";
+  // 'Delivered' status used in UI comparisons
   age?: number;
   gender?: string;
   testType?: string;
@@ -121,7 +122,9 @@ export default function AdminPanel() {
     s.on("order-updated", fetchOrders);
     s.on("new-order", (order: Order) => setOrders(prev => [order, ...prev]));
 
-    return () => s.disconnect();
+    return () => {
+      s.disconnect();
+    };
   }, [isLoggedIn]);
 
   // --- Image Upload ---

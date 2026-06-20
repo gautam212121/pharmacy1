@@ -1,19 +1,9 @@
-"use client"; // 🔹 important
-
-
-// 2---   // backend path required when host the website on server  
+"use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
-import { firebaseAuth } from "../lib/firebase";
-import { toAuthEmail } from "../lib/firebaseAuthHelpers";
+import { clearAuthSession, getStoredAuthUser, loginWithBackend, signupWithBackend, storeAuthUser, type AuthUser } from "../lib/auth";
 
-type User = { username: string; role: string; email?: string };
+type User = AuthUser;
 type UserContextType = {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
@@ -27,45 +17,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        localStorage.removeItem("user");
-        return;
-      }
-
-      const storedRole = localStorage.getItem("role") || "user";
-      const username =
-        localStorage.getItem("username") ||
-        firebaseUser.email?.split("@")[0] ||
-        firebaseUser.uid;
-
-      const userData = { username, role: storedRole, email: firebaseUser.email || undefined };
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("username", username);
-      localStorage.setItem("role", storedRole);
-    });
-
-    return () => unsubscribe();
+    setUser(getStoredAuthUser());
   }, []);
-
-    // backend path required when host the website on server  
 
 
   const login = async (username: string, password: string) => {
     try {
-      const email = toAuthEmail(username);
-      const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      const nextUser = {
-        username,
-        role: "user",
-        email: credential.user.email || undefined,
-      };
+      const nextUser = await loginWithBackend(username, password);
+      if (!nextUser) return false;
+
+      if (nextUser.role !== "user") {
+        setUser(null);
+        clearAuthSession();
+        alert("Use the admin login for admin accounts");
+        return false;
+      }
+
       setUser(nextUser);
-      localStorage.setItem("user", JSON.stringify(nextUser));
-      localStorage.setItem("username", username);
-      localStorage.setItem("role", "user");
+      storeAuthUser(nextUser);
       return true;
     } catch (error: any) {
       alert(error?.message || "Invalid credentials");
@@ -74,15 +43,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
 
-    // backend path required when host the website on server  
-
-
   const signup = async (username: string, password: string, role = "user") => {
     try {
-      const email = toAuthEmail(username);
-      await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      localStorage.setItem("username", username);
-      localStorage.setItem("role", role);
+      const nextUser = await signupWithBackend(username, password, role as AuthUser["role"]);
+      if (!nextUser) return false;
+
+      setUser(nextUser);
+      storeAuthUser(nextUser);
       return true;
     } catch (error: any) {
       alert(error?.message || "Signup failed");
@@ -91,11 +58,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await signOut(firebaseAuth);
     setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");
+    clearAuthSession();
   };
 
   return <UserContext.Provider value={{ user, login, signup, logout }}>{children}</UserContext.Provider>;

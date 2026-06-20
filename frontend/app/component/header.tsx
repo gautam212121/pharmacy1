@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { HiMenu, HiX, HiShoppingCart, HiUser, HiLogout } from "react-icons/hi";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/cartContext";
 import { useCategory } from "../context/CategoryContext";
 import Categorypanel from "../component/Categorypanel";
 import QuickHealthHelp from "../component/QuickHealthHelp";
-import { firebaseAuth } from "../lib/firebase";
-import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
+import { clearAuthSession, loginWithBackend, storeAuthUser } from "../lib/auth";
 
 function SignInHoverLogin() {
   const { login, signup } = useUser();
@@ -28,49 +26,48 @@ function SignInHoverLogin() {
     setError("");
     setLoading(true);
 
-    if (mode === "user") {
-      if (isLogin) {
-        const success = await login(username, password);
-        if (success) {
-          setOpen(false);
-          setUsername("");
-          setPassword("");
+    try {
+      if (mode === "user") {
+        if (isLogin) {
+          const success = await login(username, password);
+          if (success) {
+            setOpen(false);
+            setUsername("");
+            setPassword("");
+          } else {
+            setError("Invalid credentials");
+          }
         } else {
-          setError("Invalid credentials");
+          const success = await signup(username, password);
+          if (success) {
+            setIsLogin(true);
+            setError("✅ Account created! Please login.");
+            setUsername("");
+            setPassword("");
+          } else {
+            setError("Signup failed");
+          }
         }
       } else {
-        const success = await signup(username, password);
-        if (success) {
-          setIsLogin(true);
-          setError("✅ Account created! Please login.");
-          setUsername("");
-          setPassword("");
-        } else {
-          setError("Signup failed");
-        }
-      }
-    } else {
-      try {
-        const email = toAuthEmail(username);
-        const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-        const token = await credential.user.getIdTokenResult();
-
-        if (isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
-          localStorage.setItem("username", username);
-          localStorage.setItem("role", "admin");
-          localStorage.setItem("adminLoggedIn", "true");
-          window.location.href = "/admin";
+        const user = await loginWithBackend(username, password);
+        if (!user) {
+          setError("Invalid credentials");
           return;
         }
 
-        await signOut(firebaseAuth);
-        setError("Not authorized as admin");
-      } catch (err: any) {
-        setError(err?.message || "Admin login failed");
-      }
-    }
+        if (user.role !== "admin") {
+          setError("Not authorized as admin");
+          return;
+        }
 
-    setLoading(false);
+        storeAuthUser(user);
+        window.location.href = "/admin";
+      }
+    } catch (err: any) {
+      setError(err?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const reset = () => {
@@ -227,8 +224,7 @@ export default function Header() {
   }, [user]);
 
   const handleLogout = () => {
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");
+    clearAuthSession();
     setUsername(null);
     if (logout) logout();
     window.location.href = "/login";

@@ -4,11 +4,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
 import { io, Socket } from "socket.io-client";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { HiMenu, HiX, HiHome, HiShoppingCart, HiBell, HiUser, HiLogout, HiCog, HiChartBar , HiPlus, HiPencil, HiTrash, HiCheck, HiX as HiXIcon } from "react-icons/hi";
 import { API_BASE_URL, SOCKET_URL, normalizeBackendUrl } from "../lib/backend";
-import { firebaseAuth } from "../lib/firebase";
-import { isAdminFromToken, toAuthEmail } from "../lib/firebaseAuthHelpers";
+import { clearAuthSession, loginWithBackend, storeAuthUser } from "../lib/auth";
 
 // Types
 type Product = { _id: string; title: string; description: string; amount: number; image: string; category: string; stock?: number; discount?: number; createdAt?: string };
@@ -180,19 +178,19 @@ export default function AdminDashboard() {
     setIsLoggingIn(true);
 
     try {
-      const email = toAuthEmail(credentials.id);
-      const credential = await signInWithEmailAndPassword(firebaseAuth, email, credentials.password);
-      const token = await credential.user.getIdTokenResult();
+      const user = await loginWithBackend(credentials.id, credentials.password);
 
-      if (!isAdminFromToken(token.claims as Record<string, unknown>, credential.user.email)) {
-        await signOut(firebaseAuth);
+      if (!user) {
+        setLoginError("Invalid credentials");
+        return;
+      }
+
+      if (user.role !== "admin") {
         setLoginError("Not authorized as admin");
         return;
       }
 
-      localStorage.setItem("username", credentials.id);
-      localStorage.setItem("role", "admin");
-      localStorage.setItem("adminLoggedIn", "true");
+      storeAuthUser(user);
       setIsLoggedIn(true);
     } catch (err: any) {
       setLoginError(err?.message || "Invalid credentials");
@@ -246,7 +244,9 @@ export default function AdminDashboard() {
     s.on("product-updated", fetchProducts);
     s.on("labtest-updated", fetchLabTests);
     s.on("order-updated", fetchOrders);
-    return () => s.disconnect();
+    return () => {
+      s.disconnect();
+    };
   }, [isLoggedIn]);
 
   // Login Screen
@@ -303,11 +303,8 @@ export default function AdminDashboard() {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
           onLogout={async () => {
-            await signOut(firebaseAuth);
+            clearAuthSession();
             setIsLoggedIn(false);
-            localStorage.removeItem("adminLoggedIn");
-            localStorage.removeItem("username");
-            localStorage.removeItem("role");
           }}
           adminName="Ajeet Gautam"
         />

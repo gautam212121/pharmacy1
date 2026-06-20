@@ -14,7 +14,13 @@ export default function CartPage() {
 // 2---- // backend path required when host the website on server  
 
 
-  useEffect(() => { setSocket(io(SOCKET_URL)); return () => socket?.disconnect(); }, []);
+  useEffect(() => {
+    const s = io(SOCKET_URL);
+    setSocket(s);
+    return () => {
+      s.disconnect();
+    };
+  }, []);
 
   const handlePlaceOrder = async () => {
     if (!cart.length) return alert("Cart is empty!");
