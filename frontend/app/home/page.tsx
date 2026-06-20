@@ -410,8 +410,8 @@ export default function Home() {
               <h3 className="text-2xl font-semibold mb-6 text-black">Medicines</h3>
               <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {searchResults.products.map((p) => (
-                  <div key={p._id} className="bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100 hover:border-teal-900">
-                    <div className="relative h-56 w-full">
+                  <div key={p._id} className="w-full h-[380px] flex flex-col bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:border-teal-900 hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
+                    <div className="relative h-44 w-full flex-shrink-0">
                       {p.image ? (
                         <Image src={normalizeImage(p.image)!} alt={p.title} fill className="object-cover" />
                       ) : (
@@ -423,17 +423,30 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    <div className="p-5 flex flex-col gap-3">
-                      <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">{p.title}</h3>
+                    <div className="p-4 flex flex-col justify-between flex-1">
                       <div>
-                        <p className="text-2xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
-                        {p.discount && p.discount > 0 && (
-                          <p className="text-sm text-gray-500 line-through">₹{p.amount}</p>
+                        {p.category && (
+                          <div className="mb-1">
+                            <span className="text-[10px] uppercase font-bold text-teal-950 bg-teal-50 px-2 py-0.5 rounded">
+                              {p.category}
+                            </span>
+                          </div>
                         )}
+                        <h3 className="text-base font-bold text-slate-900 line-clamp-2 h-12">{p.title}</h3>
                       </div>
-                      <button className="w-full rounded-2xl bg-teal-900 hover:bg-teal-700 text-white py-3 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
-                        ADD
-                      </button>
+                      <div className="flex flex-col gap-2 mt-auto">
+                        <div>
+                          <p className="text-xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
+                          {p.discount && p.discount > 0 ? (
+                            <p className="text-xs text-gray-500 line-through">₹{p.amount}</p>
+                          ) : (
+                            <p className="text-xs text-transparent select-none">₹0</p>
+                          )}
+                        </div>
+                        <button className="w-full rounded-xl bg-teal-900 hover:bg-teal-700 text-white py-2 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
+                          ADD
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -447,8 +460,8 @@ export default function Home() {
               <h3 className="text-2xl font-semibold mb-6 text-black">Health Products</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {searchResults.labTests.map((test) => (
-                  <div key={test._id} className="bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100 hover:border-teal-900">
-                    <div className="relative h-56 w-full">
+                  <div key={test._id} className="w-full h-[380px] flex flex-col bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
+                    <div className="relative h-44 w-full flex-shrink-0">
                       {test.image ? (
                         <Image src={test.image} alt={test.name} fill className="object-cover" />
                       ) : (
@@ -460,17 +473,30 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    <div className="p-5 flex flex-col gap-3">
-                      <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">{test.name}</h3>
+                    <div className="p-4 flex flex-col justify-between flex-1">
                       <div>
-                        <p className="text-2xl font-bold text-slate-900">₹{test.discount && test.discount > 0 ? (test.price * (1 - test.discount / 100)).toFixed(2) : test.price}</p>
-                        {test.discount && test.discount > 0 && (
-                          <p className="text-sm text-gray-500 line-through">₹{test.price}</p>
+                        {test.healthConcern && (
+                          <div className="mb-1">
+                            <span className="text-[10px] uppercase font-bold text-teal-955 bg-teal-50 px-2 py-0.5 rounded">
+                              {test.healthConcern}
+                            </span>
+                          </div>
                         )}
+                        <h3 className="text-base font-bold text-slate-900 line-clamp-2 h-12">{test.name}</h3>
                       </div>
-                      <button className="w-full rounded-2xl bg-teal-900 hover:bg-teal-700 text-white py-3 text-sm font-semibold transition" onClick={() => handleAddToCart(test)}>
-                        ADD
-                      </button>
+                      <div className="flex flex-col gap-2 mt-auto">
+                        <div>
+                          <p className="text-xl font-bold text-slate-900">₹{test.discount && test.discount > 0 ? (test.price * (1 - test.discount / 100)).toFixed(2) : test.price}</p>
+                          {test.discount && test.discount > 0 ? (
+                            <p className="text-xs text-gray-500 line-through">₹{test.price}</p>
+                          ) : (
+                            <p className="text-xs text-transparent select-none">₹0</p>
+                          )}
+                        </div>
+                        <button className="w-full rounded-xl bg-teal-900 hover:bg-teal-700 text-white py-2 text-sm font-semibold transition" onClick={() => handleAddToCart(test)}>
+                          ADD
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -590,8 +616,8 @@ export default function Home() {
                 <h2 className="text-3xl font-bold mb-8 text-black text-center">{mainCategory}</h2>
                 <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
                   {groupItems.map((p) => (
-                    <div key={p._id} className="min-w-[220px] flex-shrink-0 bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:border-teal-900 hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
-                      <div className="relative h-48 w-full">
+                    <div key={p._id} className="w-64 h-[380px] flex flex-col flex-shrink-0 bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:border-teal-900 hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
+                      <div className="relative h-44 w-full flex-shrink-0">
                         {p.image ? (
                           <Image src={normalizeImage(p.image)!} alt={p.title} fill className="object-cover" />
                         ) : (
@@ -603,24 +629,30 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      <div className="p-5 flex flex-col gap-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">{p.title}</h3>
-                          {p.category && (
-                            <span className="text-xs uppercase font-semibold text-teal-900 bg-teal-100 px-2 py-1 rounded-full">
-                              {p.category}
-                            </span>
-                          )}
-                        </div>
+                      <div className="p-4 flex flex-col justify-between flex-1">
                         <div>
-                          <p className="text-2xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
-                          {p.discount && p.discount > 0 && (
-                            <p className="text-sm text-gray-500 line-through">₹{p.amount}</p>
+                          {p.category && (
+                            <div className="mb-1">
+                              <span className="text-[10px] uppercase font-bold text-teal-955 bg-teal-55 px-2 py-0.5 rounded">
+                                {p.category}
+                              </span>
+                            </div>
                           )}
+                          <h3 className="text-base font-bold text-slate-900 line-clamp-2 h-12">{p.title}</h3>
                         </div>
-                        <button className="w-full rounded-2xl bg-teal-900 hover:bg-teal-700 text-white py-3 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
-                          ADD
-                        </button>
+                        <div className="flex flex-col gap-2 mt-auto">
+                          <div>
+                            <p className="text-xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
+                            {p.discount && p.discount > 0 ? (
+                              <p className="text-xs text-gray-500 line-through">₹{p.amount}</p>
+                            ) : (
+                              <p className="text-xs text-transparent select-none">₹0</p>
+                            )}
+                          </div>
+                          <button className="w-full rounded-xl bg-teal-900 hover:bg-teal-700 text-white py-2 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
+                            ADD
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -635,32 +667,38 @@ export default function Home() {
               <h2 className="text-3xl font-bold mb-8 text-black text-center">Other Products</h2>
               <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
                 {groupedProducts["Other Products"].map((p) => (
-                  <div key={p._id} className="min-w-[220px] flex-shrink-0 bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:border-teal-900 hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
-                    <div className="relative h-48 w-full">
+                  <div key={p._id} className="w-64 h-[380px] flex flex-col flex-shrink-0 bg-white rounded-none shadow-xl shadow-teal-200/50 overflow-hidden transition hover:border-teal-900 hover:shadow-2xl hover:shadow-teal-200/70 border border-gray-100">
+                    <div className="relative h-44 w-full flex-shrink-0">
                       {p.image ? (
                         <Image src={normalizeImage(p.image)!} alt={p.title} fill className="object-cover" />
                       ) : (
                         <Image src="/images/medicine.jpg" alt="placeholder" fill className="object-cover" />
                       )}
                     </div>
-                    <div className="p-5 flex flex-col gap-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">{p.title}</h3>
-                        {p.category && (
-                          <span className="text-xs uppercase font-semibold text-teal-900 bg-teal-100 px-2 py-1 rounded-full">
-                            {p.category}
-                          </span>
-                        )}
-                      </div>
+                    <div className="p-4 flex flex-col justify-between flex-1">
                       <div>
-                        <p className="text-2xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
-                        {p.discount && p.discount > 0 && (
-                          <p className="text-sm text-gray-500 line-through">₹{p.amount}</p>
+                        {p.category && (
+                          <div className="mb-1">
+                            <span className="text-[10px] uppercase font-bold text-teal-955 bg-teal-55 px-2 py-0.5 rounded">
+                              {p.category}
+                            </span>
+                          </div>
                         )}
+                        <h3 className="text-base font-bold text-slate-900 line-clamp-2 h-12">{p.title}</h3>
                       </div>
-                      <button className="w-full rounded-2xl bg-teal-900 hover:bg-teal-700 text-white py-3 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
-                        ADD
-                      </button>
+                      <div className="flex flex-col gap-2 mt-auto">
+                        <div>
+                          <p className="text-xl font-bold text-slate-900">₹{p.discount && p.discount > 0 ? (p.amount! * (1 - p.discount / 100)).toFixed(2) : p.amount}</p>
+                          {p.discount && p.discount > 0 ? (
+                            <p className="text-xs text-gray-500 line-through">₹{p.amount}</p>
+                          ) : (
+                            <p className="text-xs text-transparent select-none">₹0</p>
+                          )}
+                        </div>
+                        <button className="w-full rounded-xl bg-teal-900 hover:bg-teal-700 text-white py-2 text-sm font-semibold transition" onClick={() => handleAddToCart(p)}>
+                          ADD
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
