@@ -196,6 +196,49 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
+  // Synchronize when searchQuery is typed
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("sync-search", { detail: searchQuery }));
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleSyncSearch = (e: Event) => {
+      const val = (e as CustomEvent).detail;
+      if (val !== searchQuery) {
+        setSearchQuery(val);
+      }
+    };
+    window.addEventListener("sync-search", handleSyncSearch);
+    return () => window.removeEventListener("sync-search", handleSyncSearch);
+  }, [searchQuery]);
+
+  // Listen to header-search trigger
+  useEffect(() => {
+    const handleHeaderSearch = (e: Event) => {
+      const query = (e as CustomEvent).detail;
+      setSearchQuery(query);
+      if (query.trim()) {
+        fetchSearchResults(query);
+      } else {
+        setSearchResults(null);
+        setHasSearched(false);
+      }
+    };
+    window.addEventListener("header-search", handleHeaderSearch);
+    return () => window.removeEventListener("header-search", handleHeaderSearch);
+  }, []);
+
+  // Check URL query parameters on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const q = new URLSearchParams(window.location.search).get("q");
+      if (q) {
+        setSearchQuery(q);
+        fetchSearchResults(q);
+      }
+    }
+  }, []);
+
   // Add item to cart
   const handleAddToCart = (item: Product | LabTest) => {
     // local cart preview

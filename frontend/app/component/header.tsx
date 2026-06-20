@@ -213,6 +213,46 @@ export default function Header() {
   const [showLogout, setShowLogout] = useState(false);
   const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 250) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleHeaderSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = headerSearchQuery.trim();
+    if (window.location.pathname !== "/") {
+      window.location.href = `/?q=${encodeURIComponent(query)}`;
+    } else {
+      window.dispatchEvent(new CustomEvent("header-search", { detail: query }));
+    }
+  };
+
+  // Synchronize when headerSearchQuery is typed
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("sync-search", { detail: headerSearchQuery }));
+  }, [headerSearchQuery]);
+
+  useEffect(() => {
+    const handleSyncSearch = (e: Event) => {
+      const val = (e as CustomEvent).detail;
+      if (val !== headerSearchQuery) {
+        setHeaderSearchQuery(val);
+      }
+    };
+    window.addEventListener("sync-search", handleSyncSearch);
+    return () => window.removeEventListener("sync-search", handleSyncSearch);
+  }, [headerSearchQuery]);
 
   useEffect(() => {
     if (user?.username) {
@@ -314,6 +354,29 @@ export default function Header() {
                 <img className="h-4 w-4 md:h-5 md:w-5 ml-1" src="/images/down.png" alt="" />
               </button>
             </div>
+          </div>
+
+          {/* Animated Search Bar in Header */}
+          <div className={`flex-grow max-w-md mx-4 transition-all duration-500 ease-in-out transform ${
+            scrolled 
+              ? "opacity-100 translate-y-0 scale-100 max-h-12 pointer-events-auto" 
+              : "opacity-0 -translate-y-4 scale-90 max-h-0 pointer-events-none overflow-hidden"
+          }`}>
+            <form onSubmit={handleHeaderSearchSubmit} className="flex items-center bg-white rounded-full overflow-hidden shadow-inner border border-teal-800/20">
+              <input
+                type="text"
+                placeholder="Search medicines, formula or symptom..."
+                className="w-full px-4 py-2 outline-none text-black text-xs md:text-sm bg-transparent placeholder:text-gray-400"
+                value={headerSearchQuery}
+                onChange={(e) => setHeaderSearchQuery(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="px-5 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold text-xs md:text-sm transition-colors duration-200"
+              >
+                Search
+              </button>
+            </form>
           </div>
 
           {/* Right Side Actions */}
