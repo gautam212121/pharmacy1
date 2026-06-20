@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "healthcare-czr7.onrender.com",
+        hostname: "pharmacy1-bn08.onrender.com",
         pathname: "/uploads/**",
       },
     ],
