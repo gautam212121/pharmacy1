@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -19,8 +20,8 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// MongoDB connection (avoid deprecated options)
-mongoose.connect("mongodb+srv://pharmacyDB22:pharmacyDB22@pharmacycluster.1wadf64.mongodb.net/?appName=pharmacycluster") 
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI) 
 .then(() => console.log(" MongoDB connected"))
 .catch((err) => console.error("MongoDB connection error:", err));
 

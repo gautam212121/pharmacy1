@@ -42,6 +42,8 @@ const orderSchema = new mongoose.Schema(
     testType: { type: String },
     // Additional field for doctor appointments
     doctorType: { type: String },
+    // Linked customer username
+    username: { type: String },
   },
   { timestamps: true }
 );

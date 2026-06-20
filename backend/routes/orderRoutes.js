@@ -2,10 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 
-// Get all orders
+// Get all orders (supports optional username filtering)
 router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find();
+    const filter = {};
+    if (req.query.username) {
+      filter.username = req.query.username;
+    }
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -29,6 +33,7 @@ router.post("/", async (req, res) => {
       gender,
       testType,
       doctorType,
+      username,
     } = req.body;
 
     if (!customerName || !customerPhone || !address || !items?.length) {
@@ -53,6 +58,7 @@ router.post("/", async (req, res) => {
       gender,
       testType,
       doctorType,
+      username,
     });
     await order.save();
 

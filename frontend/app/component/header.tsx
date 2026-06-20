@@ -446,6 +446,13 @@ export default function Header() {
                 All Products
               </Link>
             </li>
+            {user && (
+              <li>
+                <Link href="/dashboard" className="hover:text-secondary font-bold text-teal-200 transition px-3 py-2">
+                  Dashboard
+                </Link>
+              </li>
+            )}
             {Object.keys(dropdownItems).map((menu) => (
               <li key={menu} className="relative group">
                 <Link href={`/?category=${encodeURIComponent(menu)}`} className="hover:text-secondary transition px-3 py-2">
@@ -491,6 +498,13 @@ export default function Header() {
                   Pharmacy Services ▼
                 </button>
               </li>
+              {user && (
+                <li className="px-2 py-2 hover:text-secondary transition font-bold text-teal-200">
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    Dashboard
+                  </Link>
+                </li>
+              )}
 
               {Object.keys(dropdownItems).map((menu) => (
                 <li key={menu}>
