@@ -1,4 +1,4 @@
-const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://healthcare-czr7.onrender.com";
+const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://pharmacy1-bn08.onrender.com";
 
 export const BACKEND_URL = rawBackendUrl.replace(/\/$/, "");
 export const API_BASE_URL = `${BACKEND_URL}/api`;
